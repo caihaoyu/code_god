@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<div class="ui grid">
+    <div class="row">
+        <div class="column">
+            <div class="question ui form segment">
+                <div class="field">
+                    <label>标题</label>
+
+                    <div class="ui left labeled icon input">
+                        <input placeholder="标题" type="text" value="{$ addQuestion.title $}"
+                               ng-model="addQuestion.title">
+                        <i class="text file icon"></i>
+
+                        <div class="ui corner label">
+                            <i class="icon asterisk"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>内容</label>
+                    <textarea id="editor" class="editor" placeholder="这里输入内容" ></textarea>
+
+                </div>
+
+                <div class="ui right labeled blue submit button" ng-click="saveQuestion(addQuestion)"><i
+                        class="checkmark icon"></i>保存
+                </div>
+                <div class="ui right labeled black submit button" ng-click="changeAdd()"><i
+                        class="remove icon"></i>取消
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+

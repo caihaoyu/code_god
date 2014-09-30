@@ -1,0 +1,271 @@
+{% extends 'question/back_base.html' %}
+{% block title %}数据周刊{% endblock %}
+
+{% block content %}
+
+
+<div class="segment" ng-controller="QuestionCtrl">
+    <div class="container">
+        <div class="ui grid" ng-show="!isAdd">
+            <div class="row">
+                <div class="column">
+                    <div class="ui mini icon input">
+                        <input type="text" size="40" placeholder="搜索标题" value="{$ query $}" ng-model="query"
+                               ng-change="search(query)">
+                    </div>
+                    <div style="display:inline;float: right;">
+                        <div class="ui small right labeled icon red button" ng-click="changeAdd()"><i
+                                class="add icon"></i>新增问题
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="column">
+                    <table class="ui table segment " >
+                        <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>答案数</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="question in questions ">
+                            <td>
+                                {$ question.title $}
+                            </td>
+                            <td>
+                                {$ question.answers.length $}
+
+                            </td>
+                            <td class="option">
+                                <a style="cursor: hand;cursor: pointer;" title="新增问题"
+                                   onclick="$('.ui.modal').modal('show');">
+                                    <i class="add icon"></i>
+                                </a>
+                                <a style="cursor: hand;cursor: pointer;" title="修改" ng-click="editQuestion(question.id)">
+                                    <i class="purple edit icon"></i>
+                                </a>
+                                <a style="cursor: hand;cursor: pointer;" title="删除" ng-click="isDelete(question)">
+                                    <i class="red remove icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr ng-show="!questions.length">
+                            <td colspan="3">没有数据</td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" style="text-align:right">
+                                <div class="ui small pagination menu" ng-repeat="page in pageArray">
+                                    <a class="icon item" ng-if="page.num == 1 && currentPage>1"
+                                       ng-click="paging(currentPage-1)">
+                                        <i class="icon left arrow"></i>
+                                    </a>
+
+                                    <a class=" active item" ng-if="!page.disabled && page.num == currentPage">
+                                        {$ page.num $}
+                                    </a>
+                                    <a class="item" ng-if="!page.disabled && page.num != currentPage"
+                                       ng-click="paging(page.num)">
+                                        {$ page.num $}
+                                    </a>
+
+                                    <div class="disabled item" ng-if="page.disabled">
+                                        ...
+                                    </div>
+                                    <a class=" icon item" ng-if="page.num == pageCount && nextPage"
+                                       ng-click="paging(currentPage+1)">
+                                        <i class="icon right arrow"></i>
+                                    </a>
+                                </div>
+                                <span>
+                                    共{$ pageCount $}页
+                                </span>
+                            </th>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+         <div ng-show="isAdd">
+            {% include 'question/edit_question.html' %}
+         </div>
+    </div>
+    <div class="ui small modal" id="deleteModal">
+        <i class="close icon"></i>
+
+        <div class="header">
+            提示信息
+        </div>
+        <div class="content" style="font-size:1.3em">
+            <span>是否要删除:周刊号:<font color="red">{$ deleteQuestion.issues $}</font></span>
+        </div>
+        <div class="actions">
+            <div class="ui black button"><i class="remove icon"></i>取消</div>
+            <div class="ui blue button" ng-click="removeQuestion(deleteQuestion)"><i
+                    class="checkmark icon"></i>确定
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+
+    var app = angular.module('app',['ngResource']).config(function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{$');
+        $interpolateProvider.endSymbol('$}');
+    });
+    // django 的重复提交可以不用考虑
+    app.config(['$httpProvider', function($httpProvider) {
+        $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+    }]);
+    app.factory("Question", function($resource) {
+        return $resource("/api/question/:id",{ id: '@id' },{
+            query: { method: "GET", isArray: false },
+            update:{method:"PUT"}
+        });
+    });
+    app.factory("QuestionSearch", function($resource) {
+        return $resource("/api/question/search/:issues",{ issues: '@issues' },{
+            get:{method:"GET",isArray: false}
+        });
+    });
+    app.factory("ArticleList", function($resource) {
+        return $resource("/api/article/:id",{ id: '@id' },{
+            query:{method:"GET",isArray: false}
+        });
+    });
+    app.controller("QuestionCtrl", function($scope, Question,QuestionSearch,ArticleList) {
+       Question.query(function(data) {
+            $scope.questions = data.results;
+            initPage($scope,data,1,5)
+
+       });
+       $scope.search = function(query){
+            if(query){
+                QuestionSearch.get({issues:query,page:1},function(data){
+                    $scope.questions = data.results;
+                    initPage($scope,data,1,5)
+                });
+            }else{
+                Question.query(function(data) {
+                    $scope.questions = data.results;
+                    initPage($scope,data,1,5)
+                });
+            }
+       }
+       // 分页
+       $scope.paging = function(page){
+            //判断是否为在搜索中翻页
+            var query = $scope.query;
+            if(query){
+                QuestionSearch.get({issues:query,page:page},function(data){
+                    $scope.questions = data.results;
+                    initPage($scope,data,page,5)
+                });
+            }else{
+                Question.query({page:page},function(data) {
+                    $scope.questions = data.results;
+                    initPage($scope,data,page,5)
+                });
+            }
+       }
+       // 提示删除
+       $scope.isDelete = function(question){
+            $scope.deleteQuestion = question;
+            $('#deleteModal').modal('show');
+       }
+       // 删除方法
+       $scope.removeQuestion = function(deleteQuestion){
+            Question.delete({id:deleteQuestion.id},function(data){
+                initList($scope,Question,QuestionSearch)
+            });
+       }
+       $scope.isAdd = false;
+       $scope.editor = new Simditor({
+          textarea: $('#editor')
+        });
+       $scope.changeAdd = function(){
+            if($scope.isAdd){
+                $scope.isAdd = false
+            }else{
+                $scope.addQuestion = {title:"aaa",content:"bbb"};
+                $scope.isAdd = true;
+                $scope.editor.setValue($scope.addQuestion.content);
+            }
+       }
+       // 新增和修改的变量
+       $scope.addQuestion = {};
+       // 新增和和修改的方法
+       $scope.saveQuestion = function(addQuestion){
+            addQuestion.articles=$scope.article_scope.selected_articles;
+            if(!addQuestion.id){
+                Question.save(addQuestion,function(data){
+                    initList($scope,Question,QuestionSearch)
+                });
+            }else{
+                Question.update(addQuestion,function(data){
+                    initList($scope,Question,QuestionSearch);
+                })
+
+
+            }
+       }
+       // 打开修改页面方法
+       $scope.editQuestion = function(id){
+            $scope.addQuestion = Question.get({id:id},function(){
+                $scope.isAdd = true;
+
+                //需要修改
+                setTimeout("$('.ui.toggle.checkbox').checkbox();",1000);
+
+
+            });
+       }
+
+
+
+       // 查找文章是否被选中(待优化算法),也可以是其他obj
+       $scope.searchIndex = function (array,obj){
+            var index = -1;
+            for (i=0;i<array.length;i++){
+                if(obj.id == array[i].id){
+                    return i;
+                }
+            }
+            return index
+        }
+
+
+    });
+
+
+    // 初始化分页
+    function initList($scope,Question,QuestionSearch){
+        var query = $scope.query;
+        if(query){
+            QuestionSearch.get({issues:query,page:1},function(data){
+            $scope.questions = data.results;
+            initPage($scope,data,1,5)
+            });
+        }else{
+            Question.query(function(data) {
+                $scope.questions = data.results;
+                    initPage($scope,data,1,5)
+                });
+        }
+        $scope.isAdd = false;
+        $scope.addQuestion = {};
+
+    }
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,370 @@
+{% extends 'weekly/back_base.html' %}
+{% block title %}数据周刊{% endblock %}
+
+{% block content %}
+
+
+<div class="segment" ng-controller="WeeklyIndexCtrl">
+    <div class="container">
+        <div class="ui grid">
+            <div class="row">
+                <div class="column">
+                    <div class="ui mini icon input">
+                        <input type="text" size="40" placeholder="搜索标题" value="{$ query $}" ng-model="query"
+                               ng-change="search(query)">
+                    </div>
+                    <div style="display:inline;float: right;">
+                        <div class="ui small right labeled icon red button" ng-click="changeAdd()"><i
+                                class="add icon"></i>新增周刊
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="column">
+                    <table class="ui table segment " ng-if="!isAdd">
+                        <thead>
+                        <tr>
+                            <th>刊号</th>
+                            <th>拥有文章数</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="weekly in weeklys ">
+                            <td>
+                                {$ weekly.issues $}
+                            </td>
+                            <td>
+                                {$ weekly.articles.length $}
+
+                            </td>
+                            <td class="option">
+                                <a style="cursor: hand;cursor: pointer;" title="新增问题"
+                                   onclick="$('.ui.modal').modal('show');">
+                                    <i class="add icon"></i>
+                                </a>
+                                <a style="cursor: hand;cursor: pointer;" title="修改" ng-click="editWeekly(weekly.id)">
+                                    <i class="purple edit icon"></i>
+                                </a>
+                                <a style="cursor: hand;cursor: pointer;" title="删除" ng-click="isDelete(weekly)">
+                                    <i class="red remove icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr ng-show="!weeklys.length">
+                            <td colspan="3">没有数据</td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" style="text-align:right">
+                                <div class="ui small pagination menu" ng-repeat="page in pageArray">
+                                    <a class="icon item" ng-if="page.num == 1 && currentPage>1"
+                                       ng-click="paging(currentPage-1)">
+                                        <i class="icon left arrow"></i>
+                                    </a>
+
+                                    <a class=" active item" ng-if="!page.disabled && page.num == currentPage">
+                                        {$ page.num $}
+                                    </a>
+                                    <a class="item" ng-if="!page.disabled && page.num != currentPage"
+                                       ng-click="paging(page.num)">
+                                        {$ page.num $}
+                                    </a>
+
+                                    <div class="disabled item" ng-if="page.disabled">
+                                        ...
+                                    </div>
+                                    <a class=" icon item" ng-if="page.num == pageCount && nextPage"
+                                       ng-click="paging(currentPage+1)">
+                                        <i class="icon right arrow"></i>
+                                    </a>
+                                </div>
+                                <span>
+                                    共{$ pageCount $}页
+                                </span>
+                            </th>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div ng-if="isAdd">
+                        {% include 'weekly/edit_weekly.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui small modal" id="deleteModal">
+        <i class="close icon"></i>
+
+        <div class="header">
+            提示信息
+        </div>
+        <div class="content" style="font-size:1.3em">
+            <span>是否要删除:周刊号:<font color="red">{$ deleteWeekly.issues $}</font></span>
+        </div>
+        <div class="actions">
+            <div class="ui black button"><i class="remove icon"></i>取消</div>
+            <div class="ui blue button" ng-click="removeWeekly(deleteWeekly)"><i
+                    class="checkmark icon"></i>确定
+            </div>
+        </div>
+    </div>
+    <div class="ui small modal" id="articleDialog">
+        <i class="close icon"></i>
+
+        <div class="header">
+            选择问题
+        </div>
+        <div class="content" style="font-size:1.3em">
+            <table class="ui table segment ">
+                <thead>
+                <tr>
+                    <th style="width:10%"></th>
+                    <th>标题</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="article in article_scope.article_list ">
+                    <td>
+                        <div class="ui checkbox" ng-click="article_scope.select_article(article)">
+                            <input type="checkbox" ng-if="searchIndex(article_scope.selected_articles,article) >= 0"
+                                   checked="checked">
+                            <input type="checkbox" ng-if="searchIndex(article_scope.selected_articles,article) == -1">
+                            <label></label>
+                        </div>
+                    </td>
+                    <td>{$ article.title $}</td>
+                </tr>
+                <tr ng-show="article_scope.article_list.length <= 0">
+                    <td colspan="2">没有数据</td>
+                </tr>
+                <tr>
+                    <th colspan="2" style="text-align:right">
+                        <div class="ui small pagination menu" ng-repeat="page in article_scope.pageArray">
+                            <a class="icon item" ng-if="page.num == 1 && article_scope.currentPage>1"
+                               ng-click="article_scope.paging(article_scope.currentPage-1)">
+                                <i class="icon left arrow"></i>
+                            </a>
+
+                            <a class=" active item" ng-if="!page.disabled && page.num == article_scope.currentPage">
+                                {$ page.num $}
+                            </a>
+                            <a class="item" ng-if="!page.disabled && page.num != article_scope.currentPage"
+                               ng-click="article_scope.paging(page.num)">
+                                {$ page.num $}
+                            </a>
+
+                            <div class="disabled item" ng-if="article_scope.page.disabled">
+                                ...
+                            </div>
+                            <a class=" icon item" ng-if="page.num == article_scope.pageCount && article_scope.nextPage"
+                               ng-click="article_scope.paging(article_scope.currentPage+1)">
+                                <i class="icon right arrow"></i>
+                            </a>
+                        </div>
+                                <span>
+                                    共{$ article_scope.pageCount $}页
+                                </span>
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="actions">
+            <div class="ui black button" ng-click=""><i class="remove icon"></i>取消</div>
+            <div class="ui blue button"><i
+                    class="checkmark icon"></i>确定
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+
+    var app = angular.module('app',['ngResource']).config(function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{$');
+        $interpolateProvider.endSymbol('$}');
+    });
+    // django 的重复提交可以不用考虑
+    app.config(['$httpProvider', function($httpProvider) {
+        $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+    }]);
+    app.factory("Weekly", function($resource) {
+        return $resource("/api/weekly/:id",{ id: '@id' },{
+            query: { method: "GET", isArray: false },
+            update:{method:"PUT"}
+        });
+    });
+    app.factory("WeeklySearch", function($resource) {
+        return $resource("/api/weekly/search/:issues",{ issues: '@issues' },{
+            get:{method:"GET",isArray: false}
+        });
+    });
+    app.factory("ArticleList", function($resource) {
+        return $resource("/api/article/:id",{ id: '@id' },{
+            query:{method:"GET",isArray: false}
+        });
+    });
+    app.controller("WeeklyIndexCtrl", function($scope, Weekly,WeeklySearch,ArticleList) {
+       Weekly.query(function(data) {
+            $scope.weeklys = data.results;
+            initPage($scope,data,1,5)
+
+       });
+       $scope.search = function(query){
+            if(query){
+                WeeklySearch.get({issues:query,page:1},function(data){
+                    $scope.weeklys = data.results;
+                    initPage($scope,data,1,5)
+                });
+            }else{
+                Weekly.query(function(data) {
+                    $scope.weeklys = data.results;
+                    initPage($scope,data,1,5)
+                });
+            }
+       }
+       // 分页
+       $scope.paging = function(page){
+            //判断是否为在搜索中翻页
+            var query = $scope.query;
+            if(query){
+                WeeklySearch.get({issues:query,page:page},function(data){
+                    $scope.weeklys = data.results;
+                    initPage($scope,data,page,5)
+                });
+            }else{
+                Weekly.query({page:page},function(data) {
+                    $scope.weeklys = data.results;
+                    initPage($scope,data,page,5)
+                });
+            }
+       }
+       // 提示删除
+       $scope.isDelete = function(weekly){
+            $scope.deleteWeekly = weekly;
+            $('#deleteModal').modal('show');
+       }
+       // 删除方法
+       $scope.removeWeekly = function(deleteWeekly){
+            Weekly.delete({id:deleteWeekly.id},function(data){
+                initList($scope,Weekly,WeeklySearch)
+            });
+       }
+       $scope.isAdd = false;
+       $scope.changeAdd = function(){
+            if($scope.isAdd){
+                $scope.isAdd = false
+            }else{
+                $scope.addWeekly = {issues:'',send_date:'',is_send:false};
+                $scope.isAdd = true
+                $scope.article_scope.selected_articles = [];
+                //不是最优写法,需要修改
+                var t=setTimeout("$('.ui.toggle.checkbox').checkbox();",1000)
+            }
+       }
+       // 新增和修改的变量
+       $scope.addWeekly = {issues:'',send_date:'',is_send:false};
+       // 新增和和修改的方法
+       $scope.saveWeekly = function(addWeekly){
+            addWeekly.articles=$scope.article_scope.selected_articles;
+            if(!addWeekly.id){
+                Weekly.save(addWeekly,function(data){
+                    initList($scope,Weekly,WeeklySearch)
+                });
+            }else{
+                Weekly.update(addWeekly,function(data){
+                    initList($scope,Weekly,WeeklySearch);
+                })
+
+
+            }
+       }
+       // 打开修改页面方法
+       $scope.editWeekly = function(id){
+            $scope.addWeekly = Weekly.get({id:id},function(){
+                $scope.isAdd = true;
+                $scope.article_scope.selected_articles = $scope.addWeekly.articles;
+                //需要修改
+                setTimeout("$('.ui.toggle.checkbox').checkbox();",1000);
+
+
+            });
+       }
+       //checkbox 有问题目前需要手动修改
+       $scope.checked = function(obj){
+            $scope.addWeekly.is_send = !$scope.addWeekly.is_send;
+       }
+       // 文章选择弹窗
+       $scope.choice_article = function(){
+            $('#articleDialog').modal('show');
+            ArticleList.query(function(data){
+                $scope.article_scope.article_list = data.results;
+                initPage($scope.article_scope,data,1,5);
+                setTimeout("$('.ui.checkbox').checkbox();",1000);
+
+
+            });
+
+
+       }
+       $scope.article_scope = {};
+       $scope.article_scope.selected_articles = [];
+       $scope.article_scope.page={};
+       // 选中文章
+       $scope.article_scope.select_article = function(article){
+             var article_list = $scope.article_scope.selected_articles;
+             if($scope.searchIndex(article_list,article)>=0){
+                article_list.splice($scope.searchIndex(article_list,article),1);
+             }else{
+                article_list.push(article);
+             }
+       }
+       // 查找文章是否被选中(待优化算法),也可以是其他obj
+       $scope.searchIndex = function (array,obj){
+            var index = -1;
+            for (i=0;i<array.length;i++){
+                if(obj.id == array[i].id){
+                    return i;
+                }
+            }
+            return index
+        }
+        $scope.article_scope.paging = function(page){
+             ArticleList.query({page:page},function(data){
+                $scope.article_scope.article_list = data.results;
+                initPage($scope.article_scope,data,page,5)
+                console.log($scope.article_scope)
+
+             });
+
+        }
+
+    });
+
+
+    // 初始化分页
+    function initList($scope,Weekly,WeeklySearch){
+        var query = $scope.query;
+        if(query){
+            WeeklySearch.get({issues:query,page:1},function(data){
+            $scope.weeklys = data.results;
+            initPage($scope,data,1,5)
+            });
+        }else{
+            Weekly.query(function(data) {
+                $scope.weeklys = data.results;
+                    initPage($scope,data,1,5)
+                });
+        }
+        $scope.isAdd = false;
+        $scope.addWeekly = {issues:'',send_date:'',is_send:false};
+
+    }
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% load url from future %}
+<!DOCTYPE HTML>
+<html lang="zh-cn" ng-app="app">
+</head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="{{ STATIC_URL }}favicon.ico"/>
+<link rel="shortcut icon" href="{{ STATIC_URL }}favicon.ico" type="image/x-icon"/>
+<title>{% block title %}{% endblock %} - Erya</title>
+<link href="{{ STATIC_URL }}css/semantic.min.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/common.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}eidtor/styles/font-awesome.css" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}eidtor/styles/simditor.css" />
+
+
+<script src="{{ STATIC_URL }}js/jquery.js"></script>
+<script src="{{ STATIC_URL }}js/semantic.js"></script>
+<script src="{{ STATIC_URL }}js/angular.min.js"></script>
+<script src="{{ STATIC_URL }}js/common.js"></script>
+<script src="{{ STATIC_URL }}js/angular-resource.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}eidtor/scripts/js/module.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}eidtor/scripts/js/simditor.js"></script>
+
+
+</head>
+<body>
+<div id="top-menu" class="ui fixed transparent main menu">
+    <div class="container">
+
+            <a class="item" href="/home">
+                <i class="red large home icon" style="margin:0px;"></i> <b>后台管理</b>
+            </a>
+            <a class="active red item">
+                <i class="large book icon"></i> 问题管理
+            </a>
+
+
+    </div>
+</div>
+{% block content %}{% endblock %}
+
+<div class="clearfix"></div>
+<div id="footer">
+    <div>&copy;&nbsp;Copyright 2014 <a href="http://dmyz.org">Perchouli</a></div>
+</div>
+<!--end footer -->
+
+{% block script %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends 'weekly/base.html' %}
+{% block title %}数据周刊{% endblock %}
+
+{% block content %}
+<style>
+    html,body,.weekly-home-content { height:100%; }
+    body,.weekly-home-content { position:relative; }
+    #footer { position:absolute; bottom:0; left:0; padding:10px 0; width:100%; color:#fff; line-height:20px; text-align:center; }
+    .weekly-home-content .container { position:absolute; top:50%; left:10%; margin-top:-164px; height:228px;font-size: 15px; }
+</style>
+<div class="weekly-home-content" style="background-color: #6f5499;
+background-image: linear-gradient(to bottom, #563d7c 0px, #6f5499 100%);
+background-repeat: repeat-x;margin-top: 0;">
+    <div class="container" style="padding:50px;color:#fff;">
+        <h1 class="ui header">不是东半球最好的周刊</h1>
+
+        <p>码农周刊是一份专为程序员打造的IT技术周刊。我们会为你精选一周IT技术干货，每周五发送，完全免费。</p>
+        <br/>
+
+        <p>码农周刊微信二维码码农周刊由微博微信账号developerWorks创建。</p>
+        <br/>
+
+        <p>developerWorks一直专注于IT技术干货分享</p>
+        <br/>
+        <form>
+            <div class="ui mini icon input">
+                 <input id="mce-EMAIL" type="email" required="" placeholder="邮箱地址" size="60" name="email" />
+            </div>
+             <input class="ui small black  button" value="立刻订阅" type="submit" />
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+</script>
+{% endblock %}

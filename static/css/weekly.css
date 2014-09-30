@@ -1,0 +1,7 @@
+html,body,.weekly-home-content { height:100%; }
+body,.weekly-home-content { position:relative; }
+#footer { position:absolute; bottom:0; left:0; padding:10px 0; width:100%; color:#fff; line-height:20px;text-align:center; }
+.weekly-home-content .container { position:absolute; top:50%; left:10%; margin-top:-164px; height:228px;font-size:15px; }
+.login{padding-top: 100px !important;background-image: url('./images/background.jpg');}
+.login-item{min-height: 0 !important; width: 70% !important;}
+.login-items{width: 600px !important;}
