@@ -2,9 +2,9 @@
 <div class="ui grid">
     <div class="row">
         <div class="column">
-            <div class="question ui form segment">
+            <div class="question ui basic fluid accordion form segment">
                 <div class="field">
-                    <label>标题</label>
+                    <label>问题标题</label>
 
                     <div class="ui left labeled icon input">
                         <input placeholder="标题" type="text" value="{$ addQuestion.title $}"
@@ -16,18 +16,82 @@
                         </div>
                     </div>
                 </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>引用地址</label>
+
+                        <div class="ui left labeled icon input">
+                            <input placeholder="引用地址" type="text" value="{$ addQuestion.trackback_url $}"
+                                   ng-model="addQuestion.trackback_url">
+                            <i class="text file icon"></i>
+
+                            <div class="ui corner label">
+                                <i class="icon asterisk"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="field">
+                        <label>原作者</label>
+
+                        <div class="ui left labeled icon input">
+                            <input placeholder="原作者" type="text" value="{$ addQuestion.original_author $}"
+                                   ng-model="addQuestion.original_author">
+                            <i class="text file icon"></i>
+
+                            <div class="ui corner label">
+                                <i class="icon asterisk"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
                 <div class="field">
-                    <label>内容</label>
-                    <textarea id="editor" class="editor" placeholder="这里输入内容" ></textarea>
+                    <label>问题正文</label>
+                    <textarea id="editor" class="editor" placeholder="这里输入内容"></textarea>
 
                 </div>
+                <div ng-show="addQuestion.answers.length > 0">
+                    <h4 class="ui segment " style="text-align:center">
+                        答案
+                    </h4>
 
-                <div class="ui right labeled blue submit button" ng-click="saveQuestion(addQuestion)"><i
-                        class="checkmark icon"></i>保存
+                    <div ng-repeat=" answer in addQuestion.answers">
+                        <div class="field">
+                            <label>答案正文</label>
+                            <textarea id="answer_editor_{$ $index $}" class="editor" placeholder="这里输入内容"></textarea>
+
+                        </div>
+                        <div class="field">
+                            <label>答案原作者</label>
+                            <div class="ui left labeled icon input">
+                                <input placeholder="原作者" type="text" value="{$ answer.original_author $}"
+                                       ng-model="answer.original_author">
+                                <i class="text file icon"></i>
+
+                                <div class="ui corner label">
+                                    <i class="icon asterisk"></i>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
-                <div class="ui right labeled black submit button" ng-click="changeAdd()"><i
-                        class="remove icon"></i>取消
+                <div class="field" ng-if="addQuestion.answers == 0">
+                    <div class="ui small red button" ng-click="add_answer()" data-toggle="modal"
+                         data-target="#articleDialog">添加答案
+                    </div>
                 </div>
+                <div class="field">
+                    <div class="ui right labeled blue submit button" ng-click="saveQuestion(addQuestion)"><i
+                            class="checkmark icon"></i>保存
+                    </div>
+                    <div class="ui right labeled black submit button" ng-click="changeAdd()"><i
+                            class="remove icon"></i>取消
+                    </div>
+                </div>
+
+
             </div>
 
         </div>

@@ -7,7 +7,7 @@ from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.contrib import auth
 from weekly.form import LoginForm
-from weekly.models import Weekly, Article,OrderShip
+from weekly.models import Weekly, Article, OrderShip
 from rest_framework import status
 from rest_framework import generics, permissions
 from weekly.serializers import WeeklySerializer, ArticleSerializer
@@ -94,7 +94,7 @@ def change_articles(weekly, articles):
         try:
             article = Article.objects.get(id=articles[i]['id'])
 
-            order = OrderShip(weekly = weekly,article= article,number=i)
+            order = OrderShip(weekly=weekly, article=article, number=i)
             order.save()
         except Exception as ex:
             print(ex)

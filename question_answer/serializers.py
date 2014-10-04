@@ -5,11 +5,11 @@ from question_answer.models import Question, Answer, Tag
 
 
 class QuestionListSerializer(serializers.HyperlinkedModelSerializer):
-    answers = serializers.Field(source='get_answer_rest')
+    answers_count = serializers.Field(source='get_answer_count')
 
     class Meta:
         model = Question
-        fields = ('id', 'title', 'trackback_url', 'answers')
+        fields = ('id', 'title', 'trackback_url', 'answers_count')
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):

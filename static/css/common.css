@@ -52,4 +52,7 @@ body,.weekly-home-content { position:relative; }
      border: 0 none !important;
      resize:none;
 }
+.question{
+    padding-bottom: 20px !important;
+}
 

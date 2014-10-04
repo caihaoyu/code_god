@@ -37,7 +37,7 @@
                                 {$ question.title $}
                             </td>
                             <td>
-                                {$ question.answers.length $}
+                                {$ question.answers_count $}
 
                             </td>
                             <td class="option">
@@ -82,6 +82,7 @@
                                 </div>
                                 <span>
                                     共{$ pageCount $}页
+
                                 </span>
                             </th>
                         </tr>
@@ -193,18 +194,39 @@
         });
        $scope.changeAdd = function(){
             if($scope.isAdd){
-                $scope.isAdd = false
+                $scope.isAdd = false;
+                $scope.answers_editor = [];
             }else{
-                $scope.addQuestion = {title:"aaa",content:"bbb"};
+                $scope.addQuestion = {answers:[],answers_editor:[]};
                 $scope.isAdd = true;
-                $scope.editor.setValue($scope.addQuestion.content);
+                $scope.editor.setValue("");
+                $scope.answers_editor = [];
             }
+       }
+       $scope.answers_editor = [];
+       $scope.add_answer = function(){
+            if(!$scope.addQuestion.answers){
+                $scope.addQuestion.answers = [];
+            }
+            $scope.addQuestion.answers.push({is_accept:true});
+            setTimeout(function(){
+                var editor = new Simditor({
+                          textarea: $('#answer_editor_'+($scope.addQuestion.answers.length-1))
+                        });
+                $scope.answers_editor.push(editor);
+
+            },300)
+
+
        }
        // 新增和修改的变量
        $scope.addQuestion = {};
        // 新增和和修改的方法
        $scope.saveQuestion = function(addQuestion){
-            addQuestion.articles=$scope.article_scope.selected_articles;
+            addQuestion.content =  $scope.editor.getValue();
+            for(i = 0 ; i<$scope.answers_editor.length;i++){
+                addQuestion.answers[i].content = $scope.answers_editor[i].getValue();
+            }
             if(!addQuestion.id){
                 Question.save(addQuestion,function(data){
                     initList($scope,Question,QuestionSearch)
@@ -219,14 +241,27 @@
        }
        // 打开修改页面方法
        $scope.editQuestion = function(id){
+            $scope.answers_editor = [];
             $scope.addQuestion = Question.get({id:id},function(){
                 $scope.isAdd = true;
+                $scope.editor.setValue($scope.addQuestion.content);
+                setTimeout(function(){
+                    for(i=0;i<$scope.addQuestion.answers.length;i++){
 
-                //需要修改
-                setTimeout("$('.ui.toggle.checkbox').checkbox();",1000);
+
+                            var editor = new Simditor({
+                                          textarea: $('#answer_editor_'+i)
+                                        });
+                            editor.setValue($scope.addQuestion.answers[i].content)
+                            $scope.answers_editor.push(editor);
+
+
+                    }
+                },1000)
 
 
             });
+
        }
 
 
