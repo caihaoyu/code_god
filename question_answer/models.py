@@ -19,6 +19,7 @@ class Question(models.Model):
         return answers
 
     def get_answer_count(self):
+        print("aa")
         return self.answer_set.count()
 
     def __str__(self):
