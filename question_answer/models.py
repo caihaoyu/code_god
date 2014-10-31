@@ -7,7 +7,7 @@ class Question(models.Model):
     author = models.ForeignKey(User)
     content = models.TextField('内容')
     trackback_url = models.CharField('引用地址', max_length=300)
-    original_author = models.CharField('原作者', max_length=100)
+    original_author = models.CharField('原作者', max_length=100, null=True)
     create_date = models.DateTimeField(auto_now_add=True)
     edit_date = models.DateTimeField(auto_now=True)
 
@@ -40,7 +40,7 @@ class Answer(models.Model):
     is_accept = models.BooleanField('是否被采纳', default=False)
     create_date = models.DateTimeField(auto_now_add=True)
     edit_date = models.DateTimeField(auto_now=True)
-    original_author = models.CharField('原作者', max_length=100)
+    original_author = models.CharField('原作者', max_length=100, null=True)
     author = models.ForeignKey(User)
     questions = models.ForeignKey(Question, verbose_name="问题")
 

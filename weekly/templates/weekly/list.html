@@ -214,6 +214,7 @@
             initPage($scope,data,1,5)
 
        });
+       $scope.query="caihaoyu"
        $scope.search = function(query){
             if(query){
                 WeeklySearch.get({issues:query,page:1},function(data){

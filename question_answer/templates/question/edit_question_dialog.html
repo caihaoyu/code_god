@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<div class="ui small modal" id="deleteModal">
+    <i class="close icon"></i>
+
+    <div class="header">
+        提示信息
+    </div>
+    <div class="content" style="font-size:1.3em">
+        <span>是否要删除:周刊号:<font color="red">{$ deleteQuestion.issues $}</font></span>
+    </div>
+    <div class="actions">
+        <div class="ui black button"><i class="remove icon"></i>取消</div>
+        <div class="ui blue button" ng-click="removeQuestion(deleteQuestion)"><i
+                class="checkmark icon"></i>确定
+        </div>
+    </div>
+</div>
+<div class="ui small modal" id="tagDialog">
+    <i class="close icon"></i>
+
+    <div class="header">
+        添加标签
+    </div>
+    <div class="content" style="font-size:1.3em">
+        aaa
+    </div>
+    <div class="actions">
+        <div class="ui black button"><i class="remove icon"></i>取消</div>
+        <div class="ui blue button" ng-click="removeQuestion(deleteQuestion)"><i
+                class="checkmark icon"></i>确定
+        </div>
+    </div>
+
+</div>

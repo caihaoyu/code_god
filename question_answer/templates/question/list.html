@@ -41,10 +41,6 @@
 
                             </td>
                             <td class="option">
-                                <a style="cursor: hand;cursor: pointer;" title="新增问题"
-                                   onclick="$('.ui.modal').modal('show');">
-                                    <i class="add icon"></i>
-                                </a>
                                 <a style="cursor: hand;cursor: pointer;" title="修改" ng-click="editQuestion(question.id)">
                                     <i class="purple edit icon"></i>
                                 </a>
@@ -96,22 +92,8 @@
             {% include 'question/edit_question.html' %}
          </div>
     </div>
-    <div class="ui small modal" id="deleteModal">
-        <i class="close icon"></i>
+    {% include 'question/edit_question_dialog.html' %}
 
-        <div class="header">
-            提示信息
-        </div>
-        <div class="content" style="font-size:1.3em">
-            <span>是否要删除:周刊号:<font color="red">{$ deleteQuestion.issues $}</font></span>
-        </div>
-        <div class="actions">
-            <div class="ui black button"><i class="remove icon"></i>取消</div>
-            <div class="ui blue button" ng-click="removeQuestion(deleteQuestion)"><i
-                    class="checkmark icon"></i>确定
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
@@ -142,12 +124,60 @@
             query:{method:"GET",isArray: false}
         });
     });
-    app.controller("QuestionCtrl", function($scope, Question,QuestionSearch,ArticleList) {
+    app.factory("Tag", function($resource) {
+        return $resource("/api/tag/:id",{ id: '@id' },{
+            query:{method:"GET",isArray: false}
+        });
+    });
+    app.factory("TagSearch", function($resource) {
+        return $resource("/api/tag/search/:title",{ title: '@title' },{
+            get:{method:"GET",isArray: true}
+        });
+    });
+    app.controller("QuestionCtrl", function($sce,$scope, Question,QuestionSearch,ArticleList,Tag,TagSearch) {
        Question.query(function(data) {
             $scope.questions = data.results;
             initPage($scope,data,1,5)
 
        });
+       $scope.tag_query = "";
+       $scope.tags = [];
+       $scope.select_tags = [];
+       $scope.select_tag_ids = [];
+       $scope.search_tag = function(tag_query){
+            if(tag_query){
+                TagSearch.get({title:tag_query,list:$scope.select_tag_ids},function(data){
+                    $scope.tags = data;
+                });
+            }else{
+                $scope.tags = [];
+            }
+       }
+       $scope.add_tag = function(tag_query){
+            if(tag_query){
+                Tag.save({title:tag_query},function(data){
+                    if($scope.searchIndex($scope.select_tag_ids,data.id)==-1){
+                        $scope.select_tags.push(data);
+                        $scope.select_tag_ids.push(data.id);
+                        $scope.tag_query = "";
+                        console.log( $scope.select_tag_ids);
+                    }else{
+                        $scope.tag_query = "";
+                    }
+                });
+            }
+       }
+       $scope.choice_tag = function(tag){
+            $scope.select_tags.push(tag);
+            $scope.select_tag_ids.push(tag.id);
+            $scope.tags.splice($scope.searchIndex($scope.tags,tag),1);
+       }
+       $scope.delete_tag = function(tag){
+            $scope.select_tags.splice($scope.searchIndex($scope.select_tags,tag),1);
+            $scope.select_tag_ids.splice($scope.searchIndex($scope.select_tag_ids,tag.id),1);
+            console.log( $scope.select_tag_ids);
+
+       }
        $scope.search = function(query){
             if(query){
                 QuestionSearch.get({issues:query,page:1},function(data){
@@ -192,15 +222,18 @@
        $scope.editor = new Simditor({
           textarea: $('#editor')
         });
+       $scope.form_errors=[];
        $scope.changeAdd = function(){
+            $scope.form_errors=[];
             if($scope.isAdd){
                 $scope.isAdd = false;
                 $scope.answers_editor = [];
             }else{
-                $scope.addQuestion = {answers:[],answers_editor:[]};
+                $scope.addQuestion = {answers:[],answers_editor:[],title:'',original_author:'',trackback_url:''};
                 $scope.isAdd = true;
                 $scope.editor.setValue("");
                 $scope.answers_editor = [];
+                $scope.add_answer();
             }
        }
        $scope.answers_editor = [];
@@ -224,23 +257,28 @@
        // 新增和和修改的方法
        $scope.saveQuestion = function(addQuestion){
             addQuestion.content =  $scope.editor.getValue();
+            addQuestion.tags = $scope.select_tag_ids;
+
             for(i = 0 ; i<$scope.answers_editor.length;i++){
                 addQuestion.answers[i].content = $scope.answers_editor[i].getValue();
             }
-            if(!addQuestion.id){
-                Question.save(addQuestion,function(data){
-                    initList($scope,Question,QuestionSearch)
-                });
-            }else{
-                Question.update(addQuestion,function(data){
-                    initList($scope,Question,QuestionSearch);
-                })
+            if(validateQuestionFrom($scope,addQuestion)){
+                if(!addQuestion.id){
+                    Question.save(addQuestion,function(data){
+                        initList($scope,Question,QuestionSearch)
+                    });
+                }else{
+                    Question.update(addQuestion,function(data){
+                        initList($scope,Question,QuestionSearch);
+                    })
 
 
+                }
             }
        }
        // 打开修改页面方法
        $scope.editQuestion = function(id){
+            $scope.form_errors=[];
             $scope.answers_editor = [];
             $scope.addQuestion = Question.get({id:id},function(){
                 $scope.isAdd = true;
@@ -276,9 +314,18 @@
             }
             return index
         }
+        //
+       $scope.getContentHtml=function(content)
+       {
+            //可以在此拼接其他的html
+            return $sce.trustAsHtml(content);
+
+       }
+
 
 
     });
+
 
 
     // 初始化分页
@@ -297,6 +344,37 @@
         }
         $scope.isAdd = false;
         $scope.addQuestion = {};
+
+    }
+    function validateQuestionFrom($scope,question){
+        var validate = true;
+        if(question.title.trim().length<=0){
+            $scope.form_errors.push({title:"问题标题",message:"不能为空"});
+            validate = false;
+        }
+        if(question.content.trim().length<=0){
+            $scope.form_errors.push({title:"问题描述",message:"不能为空"});
+            validate = false;
+        }
+        if(question.trackback_url.length<=0){
+            $scope.form_errors.push({title:"引用地址",message:"不能为空"});
+            validate = false;
+        }
+        if(question.answers.length==0){
+            $scope.form_errors.push({title:"答案",message:"不能为空"});
+            validate = false;
+        }else{
+            for(i=0;i<question.answers.length;i++){
+                var answer = question.answers[i];
+                if(answer.content.trim().length<=0){
+                     $scope.form_errors.push({title:"答案正文",message:"不能为空"});
+                     validate = false;
+                     break;
+                }
+            }
+        }
+
+        return validate;
 
     }
 

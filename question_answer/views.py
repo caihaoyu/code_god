@@ -3,8 +3,10 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from rest_framework import generics, permissions
 from question_answer.models import Question, Answer, Tag
-from question_answer.serializers import QuestionListSerializer, QuestionSerializer
+from question_answer.serializers import QuestionListSerializer, QuestionSerializer, TagSerializer
 from django.contrib.auth.decorators import login_required
+from rest_framework import status
+from rest_framework.response import Response
 
 
 @login_required()
@@ -15,8 +17,12 @@ def list_question(request):
 class QuestionList(generics.ListAPIView):
     serializer_class = QuestionListSerializer
     model = Question
-    paginate_by = 20
+    paginate_by = 5
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        # return Weekly.objects.get(issues__contains='1')
+        return Question.objects.filter(title__contains=self.kwargs.get('title'))
 
 
 class QuestionDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -63,3 +69,42 @@ class QuestionPost(generics.ListCreateAPIView):
                                 questions=obj, author=self.request.user)
                 answer.save()
 
+
+class TagPost(generics.ListCreateAPIView):
+    serializer_class = TagSerializer
+    model = Tag
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            try:
+                tag = Tag.objects.get(title=serializer.object.title)
+                self.object = tag
+            except Exception as ex:
+                self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            serializer = TagSerializer(self.object)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TagSearch(generics.ListAPIView):
+    serializer_class = TagSerializer
+    model = Tag
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        # return Weekly.objects.get(issues__contains='1')
+        list = self.request.GET.getlist("list")
+        ids = []
+        if list is not None:
+            for tag in list:
+                ids.append(int(tag))
+
+        return Tag.objects.filter(title__contains=self.kwargs.get('title')).exclude(id__in=ids)

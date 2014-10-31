@@ -2,7 +2,8 @@
 <div class="ui grid">
     <div class="row">
         <div class="column">
-            <div class="question ui basic fluid accordion form segment">
+            <div class="question ui basic fluid accordion error form segment">
+
                 <div class="field">
                     <label>问题标题</label>
 
@@ -46,9 +47,34 @@
 
                     </div>
                 </div>
+                 <div class="field" ng-if="select_tags.length > 0">
+                    <span>选中的标签:</span>
+                    <div class="ui label" ng-repeat="tag in select_tags">
+                          {$ tag.title $}
+                          <i class="delete icon" ng-click="delete_tag(tag)"></i>
+                    </div>
+
+                </div>
+                <div class="ui field dropdown" style="width:100%;">
+                    <label>标签</label>
+                    <input type="text" placeholder="填写标签名,支持搜索" style="width:70%" ng-change="search_tag(tag_query)" ng-model="tag_query"
+                           value="{$ tag_query $}"/>
+
+                    <div class="ui small green button" ng-click="add_tag(tag_query)" data-toggle="modal"
+                         data-target="#articleDialog" style="margin-bottom: 4px;">添加标签
+                    </div>
+                    <div class="ui menu  transition visible" ng-if="tags.length > 0 " style="margin-left: 0.8px; min-width: 70%;">
+                        <div class="item" ng-repeat="tag in tags" ng-click="choice_tag(tag)">{$ tag.title $}</div>
+
+                    </div>
+                    <div class="ui menu  transition visible" ng-if="tags.length <= 0 && tag_query.length > 0 " style="margin-left: 0.8px; min-width: 70%;">
+                        <div class="item" ><font color="red">无结果</font> </div>
+
+                    </div>
+                </div>
                 <div class="field">
                     <label>问题正文</label>
-                    <textarea id="editor" class="editor" placeholder="这里输入内容"></textarea>
+                    <textarea id="editor" class="editor"></textarea>
 
                 </div>
                 <div ng-show="addQuestion.answers.length > 0">
@@ -59,11 +85,12 @@
                     <div ng-repeat=" answer in addQuestion.answers">
                         <div class="field">
                             <label>答案正文</label>
-                            <textarea id="answer_editor_{$ $index $}" class="editor" placeholder="这里输入内容"></textarea>
+                            <textarea id="answer_editor_{$ $index $}" class="editor"></textarea>
 
                         </div>
                         <div class="field">
                             <label>答案原作者</label>
+
                             <div class="ui left labeled icon input">
                                 <input placeholder="原作者" type="text" value="{$ answer.original_author $}"
                                        ng-model="answer.original_author">
@@ -81,6 +108,16 @@
                     <div class="ui small red button" ng-click="add_answer()" data-toggle="modal"
                          data-target="#articleDialog">添加答案
                     </div>
+                </div>
+
+                <div class="ui error message" ng-if="form_errors.length >0">
+                    <div class="header">错误信息</div>
+                    <ul class="list">
+                        <li ng-repeat=" error in form_errors">
+                            <b>{$error.title$}</b>:{$error.message $}
+                        </li>
+                    </ul>
+
                 </div>
                 <div class="field">
                     <div class="ui right labeled blue submit button" ng-click="saveQuestion(addQuestion)"><i

@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from weekly.form import LoginForm
 from weekly.models import Weekly, Article, OrderShip
-from rest_framework import status
 from rest_framework import generics, permissions
 from weekly.serializers import WeeklySerializer, ArticleSerializer
 
