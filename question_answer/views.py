@@ -44,6 +44,11 @@ class QuestionDetail(generics.RetrieveUpdateDestroyAPIView):
                                 original_author=answers[i]["original_author"],
                                 questions=obj, author=self.request.user)
                 answer.save()
+        obj.tag_set = []
+        if self.request.DATA["tags"]:
+            for id in self.request.DATA["tags"]:
+                obj.tag_set.add(Tag.objects.get(pk=id))
+
 
 
 class QuestionPost(generics.ListCreateAPIView):
@@ -53,11 +58,15 @@ class QuestionPost(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def pre_save(self, obj):
-        if self.request.DATA["content"] and self.request.DATA["original_author"]:
+        if self.request.DATA["content"]:
             obj.content = self.request.DATA["content"]
-            obj.original_author = self.request.DATA["original_author"]
         else:
             obj.content = ""
+        if self.request.DATA["original_author"]:
+            obj.original_author = self.request.DATA["original_author"]
+        else:
+            obj.original_author = ""
+
         obj.author = self.request.user
 
     def post_save(self, obj, created=True):
@@ -68,6 +77,10 @@ class QuestionPost(generics.ListCreateAPIView):
                                 original_author=answers[i]["original_author"],
                                 questions=obj, author=self.request.user)
                 answer.save()
+        if self.request.DATA["tags"]:
+            obj.tag_set = []
+            for id in self.request.DATA["tags"]:
+                obj.tag_set.add(Tag.objects.get(pk=id))
 
 
 class TagPost(generics.ListCreateAPIView):

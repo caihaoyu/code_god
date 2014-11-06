@@ -156,13 +156,14 @@
        $scope.add_tag = function(tag_query){
             if(tag_query){
                 Tag.save({title:tag_query},function(data){
-                    if($scope.searchIndex($scope.select_tag_ids,data.id)==-1){
+                    if($scope.searchIndexB($scope.select_tag_ids,data.id)==-1){
                         $scope.select_tags.push(data);
                         $scope.select_tag_ids.push(data.id);
                         $scope.tag_query = "";
-                        console.log( $scope.select_tag_ids);
+                        $scope.tags = []
                     }else{
                         $scope.tag_query = "";
+                        $scope.tags = []
                     }
                 });
             }
@@ -174,7 +175,7 @@
        }
        $scope.delete_tag = function(tag){
             $scope.select_tags.splice($scope.searchIndex($scope.select_tags,tag),1);
-            $scope.select_tag_ids.splice($scope.searchIndex($scope.select_tag_ids,tag.id),1);
+            $scope.select_tag_ids.splice($scope.searchIndexB($scope.select_tag_ids,tag.id),1);
             console.log( $scope.select_tag_ids);
 
        }
@@ -225,6 +226,10 @@
        $scope.form_errors=[];
        $scope.changeAdd = function(){
             $scope.form_errors=[];
+            $scope.select_tags = [];
+            $scope.select_tag_ids = [];
+            $scope.tag_query = "";
+            $scope.tags = [];
             if($scope.isAdd){
                 $scope.isAdd = false;
                 $scope.answers_editor = [];
@@ -261,6 +266,9 @@
 
             for(i = 0 ; i<$scope.answers_editor.length;i++){
                 addQuestion.answers[i].content = $scope.answers_editor[i].getValue();
+                if( !addQuestion.answers[i].original_author){
+                    addQuestion.answers[i].original_author="";
+                }
             }
             if(validateQuestionFrom($scope,addQuestion)){
                 if(!addQuestion.id){
@@ -280,8 +288,11 @@
        $scope.editQuestion = function(id){
             $scope.form_errors=[];
             $scope.answers_editor = [];
+            $scope.tag_query="";
             $scope.addQuestion = Question.get({id:id},function(){
                 $scope.isAdd = true;
+                $scope.select_tags = $scope.addQuestion.tags;
+                $scope.select_tag_ids = $scope.addQuestion.tags_id;
                 $scope.editor.setValue($scope.addQuestion.content);
                 setTimeout(function(){
                     for(i=0;i<$scope.addQuestion.answers.length;i++){
@@ -309,6 +320,15 @@
             var index = -1;
             for (i=0;i<array.length;i++){
                 if(obj.id == array[i].id){
+                    return i;
+                }
+            }
+            return index
+        }
+         $scope.searchIndexB = function (array,obj){
+            var index = -1;
+            for (i=0;i<array.length;i++){
+                if(obj == array[i]){
                     return i;
                 }
             }

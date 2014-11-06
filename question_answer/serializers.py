@@ -15,10 +15,12 @@ class QuestionListSerializer(serializers.HyperlinkedModelSerializer):
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     answers = serializers.Field(source='get_answer_rest')
     author = serializers.PrimaryKeyRelatedField()
+    tags = serializers.Field(source='get_tag_rest')
+    tags_id = serializers.Field(source='get_tags_id_rest')
 
     class Meta:
         model = Question
-        fields = ('id', 'title', 'trackback_url', 'author', 'content', 'original_author', 'create_date', 'edit_date', 'answers')
+        fields = ('id', 'title', 'trackback_url', 'author', 'content', 'original_author', 'create_date', 'edit_date', 'answers','tags',"tags_id")
 
 
 class AnswerSerializer(serializers.HyperlinkedModelSerializer):
